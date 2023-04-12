@@ -43,6 +43,13 @@ Run `install.sh --uninstall` to remove all files associated with video-wallpaper
 
 ## Changelog
 
+**2023/02/29**
+
+* Overhauled the bash script to:
+   * JHandle stopping for multiple monitors
+   * Use GNU getopt for options
+   * Be more organized with main and more consistant syntax
+
 **2022/02/22**
 
 * Updated and corrected `readme.md` instructions.
@@ -72,6 +79,17 @@ Run `install.sh --uninstall` to remove all files associated with video-wallpaper
 * Fixed an undesired behaviour where it was possible to start multiple video wallpapers after one another, leading to increased CPU load.
 * General clean-up inside `video-wallpaper.sh`
 
+## In Development
+
+* Adding playlist functionality
+   * Add GUI option to gui.ui xml for playlist.
+   * Add function and args to class in python script for playlist.
+   * Add functionality in bash script for one or multiple video files to loop 
+   accordingly.
+   * Design suitable config file contents for saving playlist file and option
+   to use the playlist.
+
 Known errors:
 
 * When sourcing `settings.conf`, `video-wallpaper.sh` will throw an error because it stumbles over the "\[video-wallpaper settings\]" section. This section, however, is needed by the python script. Since the shell script does not crash, this error message is tolerated for the moment until I get around to find a more elegant way than just sourcing `settings.conf`.
+> this was fixed in commit dfdf606c3fdf45c27d72dfb2a5b3fe7fdb9033d1

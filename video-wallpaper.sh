@@ -44,7 +44,7 @@ function start() {
 	screens=`xrandr | grep " connected\|\*" | pcregrep -o1 '([0-9]{1,}[x]{1,1}[0-9+]{1,}) \('`
 	for item in ${screens}; do
 		"${SCRIPTDIR}"/xwinwrap -g ${item} -fdt -ni -b -nf -un -o 1.0 -- mpv -wid WID --loop --no-audio "${video_path}" & disown
-		##JH "${SCRIPTDIR}"/xwinwrap -g ${item} -fdt -ni -b -nf -un -o 1.0 -- mpv -wid WID --loop --no-audio --playlist="/home/jason/.config/video-wallpaper/playlist.txt" & disown
+		##JH "${SCRIPTDIR}"/xwinwrap -g ${item} -fdt -ni -b -nf -un -o 1.0 -- mpv -wid WID --loop-playlist=inf --no-audio --playlist="/home/jason/.config/video-wallpaper/playlist.txt" & disown
 		MY_PIDS=( ${MY_PIDS[@]} $! )
 	done
 	update_config "\"$video_path\""
