@@ -1,4 +1,4 @@
-# video-wallpaper
+# backgrounds_in_motion (Fork of video-wallpaper)
 
 Run a video as an animated live wallpaper on your Ubuntu/Debian-based Linux desktop with dual/multiple monitor support.
 
@@ -17,8 +17,8 @@ CLI usage: video-wallpaper.sh [--start] [--stop] [--startup true|false] "video_p
 ## Installation
 
 ```bash
-git clone https://github.com/ghostlexly/gpu-video-wallpaper.git
-cd gpu-video*
+git clone https://github.com/JayRugMan/backgrounds_in_motion.git
+cd backgrounds_in_motion
 ./install.sh
 ```
 These commands will download the repository and will set up all the required dependencies, install the necessary files to your system and optionally create an app menu entry.
@@ -41,14 +41,14 @@ All dependencies will be installed when running `install.sh`.
 
 Run `install.sh --uninstall` to remove all files associated with video-wallpaper.
 
-## Changelog
+## Change Log
 
 **2023/02/29**
 
 * Overhauled the bash script to:
    * Handle stopping for multiple monitors
    * Use GNU getopt for options
-   * Be more organized with main and more consistant syntax
+   * Be more organized with main and more consistent syntax
 
 **2022/02/22**
 
@@ -91,6 +91,3 @@ Run `install.sh --uninstall` to remove all files associated with video-wallpaper
 
 ---
 
-Known errors (_this was fixed in commit dfdf606c3fdf45c27d72dfb2a5b3fe7fdb9033d1_):
-
-* When sourcing `settings.conf`, `video-wallpaper.sh` will throw an error because it stumbles over the "\[video-wallpaper settings\]" section. This section, however, is needed by the python script. Since the shell script does not crash, this error message is tolerated for the moment until I get around to find a more elegant way than just sourcing `settings.conf`.
