@@ -1,39 +1,42 @@
 #!/usr/bin/env python3
 # author: SwallowYourDreams | https://github.com/SwallowYourDreams
+# Modified by Jason Hardman https://github.com/JayRugMan
+
 import sys
 import os
-import getpass
 import configparser
 from PyQt5 import QtWidgets, QtGui, uic
 from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtGui import QIcon
+
 
 class MainWindow(QtWidgets.QMainWindow):
 	def __init__(self, verbose = False):
 		# Inherited class __init__ method
 		super(MainWindow, self).__init__()
 		# Variables
-		self.scriptDir = os.path.dirname(os.path.realpath(__file__)) + "/"
-		self.configDir = "/home/" + getpass.getuser() + "/.config/video-wallpaper"
-		self.name = "video-wallpaper"
-		self.shellScript = self.scriptDir.replace(" ", "\ ") + self.name + ".sh"
+		name = "video-wallpaper"
+		home_dir = os.path.expanduser('~')
+		configDir = f"{home_dir}/.config/{name}"
+		configFile = f"{configDir}/settings.conf"
+		self.scriptDir = f"{os.path.dirname(os.path.realpath(__file__))}"
+		self.shellScript = "{}/{}.sh".format(self.scriptDir.replace(' ', '\ '), name)
 		self.dependencies = ["mpv", "pcregrep", "xrandr"]
 		self.missingDependencies = self.checkDependencies()
-		self.autostartFile = "/home/" + getpass.getuser() + "/.config/autostart/" + self.name + ".desktop"
+		self.autostartFile = f"{home_dir}/.config/autostart/{name}.desktop"
 		# Load external .ui file
-		uic.loadUi( self.scriptDir + "gui.ui", self)
+		uic.loadUi( f"{self.scriptDir}/gui.ui", self)
 		self.show()
 		# Parse config
 		self.parser = configparser.RawConfigParser()
-		configFile = self.configDir + "/settings.conf"
 		if os.path.isfile(configFile):
 			try:
 				self.parser.read(configFile)
-				lastFile = self.parser.get(self.name + " settings", "LASTFILE").replace('"','')
+				lastFile = self.parser.get(f"{name} settings", "LASTFILE").replace('"','')
 				if len(lastFile) > 0:
 					self.directory.setText(lastFile)
 			except:
-				print("Configuration file could not be read: " + configFile)
+				print(f"Configuration file could not be read: {configFile}")
 		# UI functionality
 		self.button_browse.clicked.connect(self.selectFile)
 		self.button_start.clicked.connect(self.start)
@@ -42,8 +45,8 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.checkbox_autostart.toggled.connect(self.autostart, not self.checkbox_autostart.isChecked())
 		#Startup
 		if len(self.missingDependencies) > 0:
-			self.statusbar.showMessage("Error: missing dependencies: " + str(self.missingDependencies) + ". Please run the installer again.")
-			print("Missing dependencies: " + str(self.missingDependencies))
+			self.statusbar.showMessage(f"Error: missing dependencies: {str(self.missingDependencies)}. Please run the installer again.")
+			print(f"Missing dependencies: {str(self.missingDependencies)}")
 			self.button_start.setEnabled(False)
 			self.button_stop.setEnabled(False)
 			self.checkbox_autostart.setEnabled(False)
@@ -68,7 +71,7 @@ class MainWindow(QtWidgets.QMainWindow):
 	# Starts video wallpaper playback
 	def start(self):
 		if(self.fileSelected()):
-			exitcode = os.system(self.shellScript + ' --start --video-file "' + self.directory.text() + '"')
+			exitcode = os.system(f"{self.shellScript} --start --video-file \"{self.directory.text()}\"")
 			if exitcode > 0:
 				self.statusbar.showMessage("Error: could not start playback.")
 			else:
@@ -76,7 +79,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 	# Stops video wallpaper playback
 	def stop(self):
-		os.system(self.shellScript + " --stop")
+		os.system(f"{self.shellScript} --stop")
 		self.statusbar.showMessage("Playback stopped.")
 	
 	# Sets video wallpaper to start automatically on boot
@@ -86,7 +89,7 @@ class MainWindow(QtWidgets.QMainWindow):
 				self.statusbar.showMessage("Wallpaper autostart enabled.") 
 			elif displayMessage:
 				self.statusbar.showMessage("Wallpaper autostart disabled.")
-			os.system(self.shellScript + " --startup " + str(enable).lower() + " --video-file '" + self.directory.text() + "'")
+			os.system(f"{self.shellScript} --startup {str(enable).lower()} --video-file \"{self.directory.text()}\"")
 	
 	# Returns whether autostart is enabled
 	def autostartEnabled(self):
@@ -115,7 +118,7 @@ class MainWindow(QtWidgets.QMainWindow):
 			if missing:
 				missingDependencies.append(d)
 		print ("./xwinwrap")
-		if not os.path.isfile(self.scriptDir + "/xwinwrap"):
+		if not os.path.isfile(f"{self.scriptDir}/xwinwrap"):
 			missingDependencies.append("xwinwrap")
 		return missingDependencies
 
