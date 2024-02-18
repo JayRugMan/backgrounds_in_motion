@@ -3,16 +3,26 @@
 # contributor: SwallowYourDreams | https://github.com/SwallowYourDreams
 # Modified by Jason Hardman https://github.com/JayRugMan
 
+# GLOBALS
+NAME="video-wallpaper"
+SCRIPTDIR="$(dirname $(realpath "${0}"))"
+CONFDIR="/home/${USER}/.config/video-wallpaper"
+CONF="${CONFDIR}/settings.conf"  # contains PIDS and lastfile parameters
+PIDS=()
+LASTFILE=""
+
 
 function load_config() {
 	# Source config file with MY_PIDS and LASTFILE
 	# or creates it and then sources it
-	if [ -f "${CONF}" ] ; then
+	if [[ -f "${CONF}" ]] ; then
 		source <( awk 'NR!=1' ${CONF} )
 	else
-	    echo "[${NAME} settings]" > "${CONF}"
-		echo 'MY_PIDS=()' >> "${CONF}"
-		echo 'LASTFILE=""' >> "${CONF}"
+		cat <<EOF > "${CONF}"
+[${NAME} settings]
+MY_PIDS=()
+LASTFILE=""
+EOF
 		source <( awk 'NR!=1' ${CONF} )
 	fi
 }
@@ -21,30 +31,29 @@ function load_config() {
 function update_config() {
 	# Write to config file
 	# Parameters: $1: Video file
-
 	local new_file="${1}"; shift
-	echo "[${NAME} settings]" > "${CONF}"
-
 	if [[ ! -z ${new_file} ]] ; then
 		LASTFILE="${new_file}"
 	fi
-
-	echo "MY_PIDS=( ${MY_PIDS[@]} )" >> "${CONF}"
-	echo "LASTFILE=${LASTFILE}" >> "${CONF}"
+	cat <<EOF > "${CONF}"
+[${NAME} settings]
+MY_PIDS=( ${MY_PIDS[@]} )
+LASTFILE=${LASTFILE}
+EOF
 }
 
 
 function start() {
 	# Start video wallpaper playback
 	# If there is an active video wallpaper, stop it first.
-	if [ ${#MY_PIDS} -gt 0 ] ; then
+	if [[ ${#MY_PIDS[@]} -gt 0 ]] ; then
 		stop
 	fi
-	video_path="${1}"
-	screens=`xrandr | grep " connected\|\*" | pcregrep -o1 '([0-9]{1,}[x]{1,1}[0-9+]{1,}) \('`
-	for item in ${screens}; do
-		"${SCRIPTDIR}"/xwinwrap -g ${item} -fdt -ni -b -nf -un -o 1.0 -- mpv -wid WID --loop --no-audio "${video_path}" & disown
-		##JH "${SCRIPTDIR}"/xwinwrap -g ${item} -fdt -ni -b -nf -un -o 1.0 -- mpv -wid WID --loop-playlist=inf --no-audio --playlist="/home/jason/.config/video-wallpaper/playlist.txt" & disown
+	local video_path="${1}"
+	local screens=( $(xrandr | grep " connected\|\*" | pcregrep -o1 '([0-9]{1,}[x]{1,1}[0-9+]{1,}) \(') )
+	for screen in ${screens[@]}; do
+		"${SCRIPTDIR}"/xwinwrap -g ${screen} -fdt -ni -b -nf -un -o 1.0 -- mpv -wid WID --loop --no-audio "${video_path}" & disown
+		##JH "${SCRIPTDIR}"/xwinwrap -g ${screen} -fdt -ni -b -nf -un -o 1.0 -- mpv -wid WID --loop-playlist=inf --no-audio --playlist="/home/jason/.config/video-wallpaper/playlist.txt" & disown
 		MY_PIDS=( ${MY_PIDS[@]} $! )
 	done
 	update_config "\"$video_path\""
@@ -192,8 +201,10 @@ function and_action() {
 	if [[ "${to_execute}" == "stop" ]] || ! ${is_startup} 2>/dev/null; then
 		eval "${to_execute}"
 	elif [[ ! -z "${to_execute}" ]]; then  # the only other options are start and startup
-		if [[ ! -z ${vid_file} ]]; then eval "${to_execute} ${vid_file}"
-		else usage "A file is required for this option"; exit 1
+		if [[ ! -z ${vid_file} ]]; then
+			eval "${to_execute} ${vid_file}"
+		else
+			usage "A file is required for this option"; exit 1
 		fi
 	else
 		usage "No execution option chosen"
@@ -205,13 +216,6 @@ function and_action() {
 function main() {
 	# The Main Event
 
-	# GLOBALS
-	NAME="video-wallpaper"
-	SCRIPTDIR="$(dirname $(realpath "${0}"))"
-	CONFDIR="/home/${USER}/.config/video-wallpaper"
-	CONF="${CONFDIR}/settings.conf"  # contains PIDS and lastfile parameters
-	PIDS=()
-	LASTFILE=""
 	if [ ! -d "$CONFDIR" ] ; then
 		mkdir "$CONFDIR"
 		touch "$CONF"	
